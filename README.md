@@ -26,5 +26,5 @@ library's SQL script:
 Then, we just run the sql:
 
 ```
-psql -f patron_loads/AIC_student_load.sql
+psql -U evergreen -h dbserver -f patron_loads/AIC_student_load.sql
 ```
