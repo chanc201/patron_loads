@@ -22,7 +22,7 @@
 TRUNCATE staging.student_load;
 
 --Libraries need to provide a tabbed delimited file with.
-\COPY staging.student_load (library, first_given_name, second_given_name, family_name, barcode, usrname, passwd, ident_value, local_street1, local_street2, local_city, local_state, local_post_code, home_street1, home_street2, home_city, home_state, home_post_code, local_telephone, home_telephone, email, dob, expire_date, permission_group, gender, stat_cat1, stat_cat2) FROM '/home/opensrf/MWCC_patrons.txt';
+\COPY staging.student_load (library, first_given_name, second_given_name, family_name, barcode, usrname, passwd, ident_value, local_street1, local_street2, local_city, local_state, local_post_code, home_street1, home_street2, home_city, home_state, home_post_code, local_telephone, home_telephone, email, dob, expire_date, permission_group, gender, stat_cat1, stat_cat2) FROM '/home/opensrf/patron_loads/student_data/MWCC_patrons.txt';
 
 --Normalizes the data
 DELETE FROM staging.student_load WHERE first_given_name~*'(first_given_name)' AND second_given_name~*'(second_given_name)';

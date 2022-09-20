@@ -12,7 +12,7 @@ We install these on our utility server by cloning the repository.
 Each member library has its own SQL script because we don't always do
 the same things for each.
 
-We upload a file of patrons to load to the opensrf user's home
+We upload a file of patrons to load to the opensrf user's ~/patron_loads/student_data
 directory and make sure it is named as appropriate for the particular
 library's SQL script:
 
