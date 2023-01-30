@@ -64,7 +64,7 @@ BEGIN;
 
 UPDATE staging.student_load SET usr=u.id FROM actor.usr AS u WHERE student_load.ident_value=u.ident_value;
 UPDATE actor.usr SET profile=t.id FROM staging.student_load AS s INNER JOIN permission.grp_tree t ON UPPER(s.permission_group)=UPPER(t.name) WHERE usr.id=s.usr AND s.permission_group IS NOT NULL;
-UPDATE actor.usr SET expire_date=date(s.expire_date), ident_type=1 FROM staging.student_load AS s WHERE usr.id=s.usr AND s.expire_date IS NOT NULL;
+UPDATE actor.usr SET expire_date=date(s.expire_date), ident_type=1, email=(s.email), first_given_name=(s.first_given_name), family_name=(s.family_name) FROM staging.student_load AS s WHERE usr.id=s.usr AND s.expire_date IS NOT NULL;
 
 INSERT INTO staging.student_load_log (org_unit, type, count) SELECT 152, 'UPDATED', count(usr) FROM staging.student_load WHERE usr IS NOT NULL;
 DELETE from STAGING.STUDENT_LOAD where USR IS NOT NULL;
