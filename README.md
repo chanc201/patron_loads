@@ -5,9 +5,18 @@ data for our academic members.  The are based off of some SQL scripts
 that were circulating in the Evergreen community some time ago.  While
 we still use them, there are probably better ways to do this today.
 
-# Usage
+# Setup
 
 We install these on our utility server by cloning the repository.
+
+To create the database tables used by the SQL scripts, run setup.sql:
+
+    psql -U evergreen -h dbserver -f setup.sql
+
+You may need to create the `staging` schema or fix any errors that pop
+up.
+
+# Usage
 
 Each member library has its own SQL script because we don't always do
 the same things for each.
@@ -25,6 +34,6 @@ library's SQL script:
 
 Then, we just run the sql:
 
-```
-psql -U evergreen -h dbserver -f patron_loads/AIC_student_load.sql
-```
+
+    psql -U evergreen -h dbserver -f patron_loads/AIC_student_load.sql
+

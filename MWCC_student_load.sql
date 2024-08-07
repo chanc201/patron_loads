@@ -22,7 +22,7 @@
 TRUNCATE staging.student_load;
 
 --Libraries need to provide a tabbed delimited file with.
-\COPY staging.student_load (library, first_given_name, second_given_name, family_name, barcode, usrname, passwd, ident_value, local_street1, local_street2, local_city, local_state, local_post_code, home_street1, home_street2, home_city, home_state, home_post_code, local_telephone, home_telephone, email, dob, expire_date, permission_group, gender, stat_cat1, stat_cat2) FROM '/home/opensrf/patron_loads/student_data/MWCC_patrons.txt';
+\COPY staging.student_load (library, first_given_name, second_given_name, family_name, barcode, usrname, passwd, ident_value, local_street1, local_street2, local_city, local_state, local_post_code, home_street1, home_street2, home_city, home_state, home_post_code, local_telephone, home_telephone, email, dob, expire_date, permission_group, gender, stat_cat1, stat_cat2, pref_first_given_name, pref_second_given_name, pref_family_name) FROM '/home/opensrf/student_data/MWCC_patrons.txt';
 
 --Normalizes the data
 DELETE FROM staging.student_load WHERE first_given_name~*'(first_given_name)' AND second_given_name~*'(second_given_name)';
@@ -44,20 +44,20 @@ ON s.permission_group = grp_tree.name AND grp_tree.parent = 19
 WHERE student_load.ident_value = s.ident_value
 AND grp_tree IS NULL;
 
-UPDATE staging.student_load SET gender='male' WHERE gender~*'^m';
-UPDATE staging.student_load SET gender='female' WHERE gender~*'^f';
+UPDATE staging.student_load SET gender='';
 UPDATE staging.student_load SET first_given_name=UPPER(first_given_name), second_given_name=UPPER(second_given_name), family_name=UPPER(family_name),
 	local_street1=UPPER(local_street1), local_street2=UPPER(local_street2), local_city=UPPER(local_city), local_state=UPPER(local_state),
 	home_street1=UPPER(home_street1), home_street2=UPPER(home_street2), home_city=UPPER(home_city), home_state=UPPER(home_state);
 UPDATE staging.student_load SET usrname=ident_value WHERE usrname !~*'^[0-9a-z]+$';
 UPDATE staging.student_load SET passwd=UPPER(family_name) WHERE passwd !~*'^[a-z0-9]+$';
 UPDATE staging.student_load SET barcode=ident_value WHERE barcode !~*'^[0-9a-z]+$';
+UPDATE staging.student_load SET pref_first_given_name=UPPER(pref_first_given_name), pref_second_given_name=UPPER(pref_second_given_name), pref_family_name=UPPER(pref_family_name);
 
 --Update existing records matching on ident_value
 BEGIN;
 
 UPDATE staging.student_load SET usr=u.id FROM actor.usr AS u WHERE student_load.ident_value=u.ident_value;
-UPDATE actor.usr SET first_given_name=s.first_given_name, second_given_name=s.second_given_name, family_name=s.family_name, ident_type=1 FROM staging.student_load AS s WHERE usr.id=s.usr;
+UPDATE actor.usr SET first_given_name=s.first_given_name, second_given_name=s.second_given_name, family_name=s.family_name, pref_first_given_name=s.pref_first_given_name, pref_second_given_name=s.pref_second_given_name, pref_family_name=s.pref_family_name, ident_type=1 FROM staging.student_load AS s WHERE usr.id=s.usr;
 UPDATE actor.usr SET profile=t.id FROM staging.student_load AS s INNER JOIN permission.grp_tree t ON UPPER(s.permission_group)=UPPER(t.name) WHERE usr.id=s.usr AND s.permission_group IS NOT NULL;
 UPDATE actor.usr SET day_phone=s.local_telephone FROM staging.student_load AS s WHERE usr.id=s.usr AND s.local_telephone IS NOT NULL;
 UPDATE actor.usr SET other_phone=s.home_telephone FROM staging.student_load AS s WHERE usr.id=s.usr AND s.home_telephone IS NOT NULL;
@@ -101,8 +101,8 @@ INSERT INTO staging.student_load_log (type, count, org_unit, description) SELECT
 UPDATE staging.student_load SET do_not_load=TRUE FROM actor.card c WHERE student_load.barcode=c.barcode;
 INSERT INTO staging.student_load_log (type, count, org_unit, description) SELECT 'not loaded', count(l.ident_value), 79, 'barcode already exists' FROM staging.student_load l JOIN actor.usr u ON l.usrname=u.usrname;
 
-INSERT INTO actor.usr (first_given_name, second_given_name, family_name, usrname, passwd, day_phone, other_phone, email, dob, expire_date, standing, ident_type, ident_value, net_access_level, profile, home_ou)
-	SELECT s.first_given_name, s.second_given_name, s.family_name, s.usrname, s.passwd, s.local_telephone, s.home_telephone, s.email, date(s.dob), date(s.expire_date), 1, 1, s.ident_value, 2, t.id, o.id FROM staging.student_load s JOIN permission.grp_tree t ON UPPER(s.permission_group) = UPPER(t.name) JOIN actor.org_unit  o ON UPPER(s.library)=UPPER(o.name)
+INSERT INTO actor.usr (first_given_name, second_given_name, family_name, usrname, passwd, day_phone, other_phone, email, dob, expire_date, standing, ident_type, ident_value, net_access_level, profile, home_ou, pref_first_given_name, pref_second_given_name, pref_family_name)
+	SELECT s.first_given_name, s.second_given_name, s.family_name, s.usrname, s.passwd, s.local_telephone, s.home_telephone, s.email, date(s.dob), date(s.expire_date), 1, 1, s.ident_value, 2, t.id, o.id, s.pref_first_given_name, s.pref_second_given_name, s.pref_family_name FROM staging.student_load s JOIN permission.grp_tree t ON UPPER(s.permission_group) = UPPER(t.name) JOIN actor.org_unit  o ON UPPER(s.library)=UPPER(o.name)
 	WHERE s.usr is null AND do_not_load=FALSE;
 UPDATE staging.student_load SET usr=u.id FROM actor.usr as u WHERE student_load.ident_value=u.ident_value;
 INSERT INTO actor.usr_address (valid, within_city_limits, address_type, usr, street1, street2, city, state, country, post_code)
