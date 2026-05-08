@@ -28,7 +28,6 @@ TRUNCATE staging.student_load;
 
 --Normalizes the data
 DELETE FROM staging.student_load WHERE first_given_name~*'(first_given_name)' AND second_given_name~*'(second_given_name)';
-UPDATE staging.student_load SET ident_value = TRIM(ident_value)||'GC' WHERE ident_value!~'(GC)';
 UPDATE staging.student_load SET home_telephone=SUBSTRING(home_telephone,1,3)||'-'||SUBSTRING(home_telephone,4,3)||'-'||SUBSTRING(home_telephone,7,4) WHERE home_telephone~'[0-9]{10}';
 UPDATE staging.student_load SET local_telephone=SUBSTRING(local_telephone,1,3)||'-'||SUBSTRING(local_telephone,4,3)||'-'||SUBSTRING(local_telephone,7,4) WHERE local_telephone~'[0-9]{10}';
 UPDATE staging.student_load SET home_telephone=regexp_replace((regexp_replace(home_telephone, E'\\)','-')),E'\\(','') WHERE home_telephone~E'\\([0-9]{3}\\)[0-9]{3}-[0-9]{4}';
